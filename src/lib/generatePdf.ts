@@ -1,5 +1,3 @@
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import type { IProduct } from '../data/products.type';
 import type { PriceLevel } from '../data/priceLevels';
 
@@ -41,7 +39,12 @@ function buildFileBaseName(title: string) {
 	return `${safeTitle}-${timestamp}`;
 }
 
-function buildOrderSummaryPdf({ title, priceLevel, products }: PdfOptions) {
+async function buildOrderSummaryPdf({ title, priceLevel, products }: PdfOptions) {
+	const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+		import('jspdf'),
+		import('jspdf-autotable'),
+	]);
+
 	const doc = new jsPDF();
 	const fileBaseName = buildFileBaseName(title);
 	doc.setProperties({ title: fileBaseName });
@@ -192,8 +195,8 @@ function buildOrderSummaryPdf({ title, priceLevel, products }: PdfOptions) {
 	return { doc, fileBaseName };
 }
 
-export function downloadPdf(options: PdfOptions) {
-	const { doc, fileBaseName } = buildOrderSummaryPdf(options);
+export async function downloadPdf(options: PdfOptions) {
+	const { doc, fileBaseName } = await buildOrderSummaryPdf(options);
 	const filename = `${fileBaseName}.pdf`;
 	const blob = doc.output('blob');
 	const file = new File([blob], filename, { type: 'application/pdf' });
@@ -207,8 +210,8 @@ export function downloadPdf(options: PdfOptions) {
 	URL.revokeObjectURL(url);
 }
 
-export function printPdf(options: PdfOptions) {
-	const { doc, fileBaseName } = buildOrderSummaryPdf(options);
+export async function printPdf(options: PdfOptions) {
+	const { doc, fileBaseName } = await buildOrderSummaryPdf(options);
 	const blob = doc.output('blob');
 	const filename = `${fileBaseName}.pdf`;
 	const file = new File([blob], filename, { type: 'application/pdf' });
