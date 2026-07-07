@@ -5,7 +5,13 @@ import PrintOptionsModal from './PrintOptionsModal';
 import { generatePdf } from '../lib/generatePdf';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './ui/card';
+import {
+	Card,
+	CardContent,
+	CardFooter,
+	CardHeader,
+	CardTitle,
+} from './ui/card';
 import { Checkbox } from './ui/checkbox';
 import { Input } from './ui/input';
 import {
@@ -60,7 +66,9 @@ function ProductListing() {
 			(acc, product) => ({
 				vp: acc.vp + product.vp * product.quantity,
 				mrp: acc.mrp + product.mrp * product.quantity,
-				price15: acc.price15 + product.price15 * product.quantity,
+				bronze: acc.bronze + product.bronze * product.quantity,
+				silver: acc.silver + product.silver * product.quantity,
+				gold: acc.gold + product.gold * product.quantity,
 				price25: acc.price25 + product.price25 * product.quantity,
 				price35: acc.price35 + product.price35 * product.quantity,
 				price42: acc.price42 + product.price42 * product.quantity,
@@ -69,7 +77,9 @@ function ProductListing() {
 			{
 				vp: 0,
 				mrp: 0,
-				price15: 0,
+				bronze: 0,
+				silver: 0,
+				gold: 0,
 				price25: 0,
 				price35: 0,
 				price42: 0,
@@ -218,7 +228,9 @@ function ProductListing() {
 										<TableHead>Category</TableHead>
 										<TableHead className="text-right">VP</TableHead>
 										<TableHead className="text-right">MRP</TableHead>
-										<TableHead className="text-right">Price 15</TableHead>
+										<TableHead className="text-right">Bronze</TableHead>
+										<TableHead className="text-right">Silver</TableHead>
+										<TableHead className="text-right">Gold</TableHead>
 										<TableHead className="text-right">Price 25</TableHead>
 										<TableHead className="text-right">Price 35</TableHead>
 										<TableHead className="text-right">Price 42</TableHead>
@@ -261,7 +273,13 @@ function ProductListing() {
 													{product.mrp.toFixed(2)}
 												</TableCell>
 												<TableCell className="text-right">
-													{product.price15.toFixed(2)}
+													{product.bronze.toFixed(2)}
+												</TableCell>
+												<TableCell className="text-right">
+													{product.silver.toFixed(2)}
+												</TableCell>
+												<TableCell className="text-right">
+													{product.gold.toFixed(2)}
 												</TableCell>
 												<TableCell className="text-right">
 													{product.price25.toFixed(2)}
@@ -298,7 +316,9 @@ function ProductListing() {
 
 					<Card className="w-full shrink-0 self-start py-0 lg:sticky lg:top-6 lg:w-80">
 						<CardHeader className="border-b py-3">
-							<CardTitle>Selected Products ({selectedProducts.length})</CardTitle>
+							<CardTitle>
+								Selected Products ({selectedProducts.length})
+							</CardTitle>
 						</CardHeader>
 
 						{selectedProducts.length === 0 ? (
@@ -328,7 +348,10 @@ function ProductListing() {
 													variant="ghost"
 													size="icon-sm"
 													onClick={() =>
-														updateQuantity(product.productName, product.quantity - 1)
+														updateQuantity(
+															product.productName,
+															product.quantity - 1,
+														)
 													}
 													aria-label={`Decrease quantity for ${product.productName}`}
 													className="rounded-r-none"
@@ -353,7 +376,10 @@ function ProductListing() {
 													variant="ghost"
 													size="icon-sm"
 													onClick={() =>
-														updateQuantity(product.productName, product.quantity + 1)
+														updateQuantity(
+															product.productName,
+															product.quantity + 1,
+														)
 													}
 													aria-label={`Increase quantity for ${product.productName}`}
 													className="rounded-l-none"
@@ -390,8 +416,16 @@ function ProductListing() {
 										<dd>{totals.mrp.toFixed(2)}</dd>
 									</div>
 									<div className="flex justify-between">
-										<dt className="text-muted-foreground">Price 15</dt>
-										<dd>{totals.price15.toFixed(2)}</dd>
+										<dt className="text-muted-foreground">Bronze</dt>
+										<dd>{totals.bronze.toFixed(2)}</dd>
+									</div>
+									<div className="flex justify-between">
+										<dt className="text-muted-foreground">Silver</dt>
+										<dd>{totals.silver.toFixed(2)}</dd>
+									</div>
+									<div className="flex justify-between">
+										<dt className="text-muted-foreground">Gold</dt>
+										<dd>{totals.gold.toFixed(2)}</dd>
 									</div>
 									<div className="flex justify-between">
 										<dt className="text-muted-foreground">Price 25</dt>
@@ -442,3 +476,4 @@ function ProductListing() {
 }
 
 export default ProductListing;
+

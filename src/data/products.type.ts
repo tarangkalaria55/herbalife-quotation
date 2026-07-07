@@ -3,7 +3,9 @@ export interface IProduct {
 	category: string;
 	vp: number;
 	mrp: number;
-	price15: number;
+	bronze: number;
+	silver: number;
+	gold: number;
 	price25: number;
 	price35: number;
 	price42: number;

@@ -34,7 +34,7 @@ function PrintOptionsModal({
 	onConfirm,
 }: PrintOptionsModalProps) {
 	const [title, setTitle] = useState('Order Summary');
-	const [priceLevel, setPriceLevel] = useState<PriceLevel>('price15');
+	const [priceLevel, setPriceLevel] = useState<PriceLevel>('bronze');
 
 	const totals = useMemo(() => {
 		const totalMrp = products.reduce(
