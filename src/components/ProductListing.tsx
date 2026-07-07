@@ -1,9 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Inbox, Minus, Plus, Printer, Search, Tag, X } from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
+import { Download, Inbox, Minus, Plus, Search, Tag, X } from 'lucide-react';
 import { products } from '../data/products';
 import PrintOptionsModal from './PrintOptionsModal';
-import PrintPreview from './PrintPreview';
-import type { PriceLevel } from '../data/priceLevels';
+import { generatePdf } from '../lib/generatePdf';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './ui/card';
@@ -30,10 +29,6 @@ function ProductListing() {
 	const [category, setCategory] = useState('All');
 	const [quantities, setQuantities] = useState<Map<string, number>>(new Map());
 	const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
-	const [printData, setPrintData] = useState<{
-		title: string;
-		priceLevel: PriceLevel;
-	} | null>(null);
 
 	const categories = useMemo(() => {
 		const unique = new Set(products.map((product) => product.category));
@@ -139,14 +134,6 @@ function ProductListing() {
 		setCategory('All');
 	}, []);
 
-	useEffect(() => {
-		if (!printData) return;
-		const handleAfterPrint = () => setPrintData(null);
-		window.addEventListener('afterprint', handleAfterPrint);
-		window.print();
-		return () => window.removeEventListener('afterprint', handleAfterPrint);
-	}, [printData]);
-
 	const hasActiveFilters = search.trim() !== '' || category !== 'All';
 	const allFilteredSelected =
 		filteredProducts.length > 0 &&
@@ -154,7 +141,7 @@ function ProductListing() {
 
 	return (
 		<>
-			<div className="min-h-screen bg-muted/30 print:hidden">
+			<div className="min-h-screen bg-muted/30">
 				<header className="border-b bg-background">
 					<div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
 						<div>
@@ -433,8 +420,8 @@ function ProductListing() {
 								onClick={() => setIsPrintModalOpen(true)}
 								className="w-full"
 							>
-								<Printer className="h-4 w-4" />
-								Print
+								<Download className="h-4 w-4" />
+								Download PDF
 							</Button>
 						</CardFooter>
 					</Card>
@@ -447,17 +434,9 @@ function ProductListing() {
 				onOpenChange={setIsPrintModalOpen}
 				onConfirm={(title, priceLevel) => {
 					setIsPrintModalOpen(false);
-					setPrintData({ title, priceLevel });
+					generatePdf({ title, priceLevel, products: selectedProducts });
 				}}
 			/>
-
-			{printData && (
-				<PrintPreview
-					title={printData.title}
-					priceLevel={printData.priceLevel}
-					products={selectedProducts}
-				/>
-			)}
 		</>
 	);
 }

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Printer } from 'lucide-react';
+import { Download } from 'lucide-react';
 import type { IProduct } from '../data/products.type';
 import { PRICE_LEVELS, type PriceLevel } from '../data/priceLevels';
 import { Button } from './ui/button';
@@ -66,9 +66,9 @@ function PrintOptionsModal({
 				<DialogHeader>
 					<DialogTitle className="flex items-center gap-2">
 						<span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
-							<Printer className="h-4.5 w-4.5" />
+							<Download className="h-4.5 w-4.5" />
 						</span>
-						Print Options
+						Download PDF
 					</DialogTitle>
 				</DialogHeader>
 
@@ -91,7 +91,12 @@ function PrintOptionsModal({
 							onValueChange={(value) => setPriceLevel(value as PriceLevel)}
 						>
 							<SelectTrigger id="print-price-level" className="w-full">
-								<SelectValue />
+								<SelectValue>
+									{(value: PriceLevel) =>
+										PRICE_LEVELS.find((level) => level.value === value)
+											?.label ?? value
+									}
+								</SelectValue>
 							</SelectTrigger>
 							<SelectContent>
 								{PRICE_LEVELS.map((level) => (
@@ -110,7 +115,9 @@ function PrintOptionsModal({
 						</div>
 						{priceLevel !== 'mrp' && (
 							<div className="flex justify-between">
-								<dt className="text-muted-foreground">Total {priceLevelLabel}</dt>
+								<dt className="text-muted-foreground">
+									Total {priceLevelLabel}
+								</dt>
 								<dd>{totals.totalSelected.toFixed(2)}</dd>
 							</div>
 						)}
@@ -130,10 +137,12 @@ function PrintOptionsModal({
 						Cancel
 					</Button>
 					<Button
-						onClick={() => onConfirm(title.trim() || 'Order Summary', priceLevel)}
+						onClick={() =>
+							onConfirm(title.trim() || 'Order Summary', priceLevel)
+						}
 					>
-						<Printer className="h-4 w-4" />
-						Print
+						<Download className="h-4 w-4" />
+						Download PDF
 					</Button>
 				</DialogFooter>
 			</DialogContent>
@@ -142,3 +151,4 @@ function PrintOptionsModal({
 }
 
 export default PrintOptionsModal;
+
