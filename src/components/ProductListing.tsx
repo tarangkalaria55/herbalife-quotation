@@ -1,17 +1,29 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Inbox, Minus, Plus, Printer, Search, Tag, X } from 'lucide-react';
 import { products } from '../data/products';
 import PrintOptionsModal from './PrintOptionsModal';
 import PrintPreview from './PrintPreview';
 import type { PriceLevel } from '../data/priceLevels';
+import { Badge } from './ui/badge';
+import { Button } from './ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './ui/card';
+import { Checkbox } from './ui/checkbox';
+import { Input } from './ui/input';
 import {
-	InboxIcon,
-	MinusIcon,
-	PlusIcon,
-	PrinterIcon,
-	SearchIcon,
-	TagIcon,
-	XIcon,
-} from './icons';
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from './ui/select';
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from './ui/table';
 
 function ProductListing() {
 	const [search, setSearch] = useState('');
@@ -136,227 +148,207 @@ function ProductListing() {
 	}, [printData]);
 
 	const hasActiveFilters = search.trim() !== '' || category !== 'All';
+	const allFilteredSelected =
+		filteredProducts.length > 0 &&
+		filteredProducts.every((product) => quantities.has(product.productName));
 
 	return (
 		<>
-			<div className="min-h-screen bg-gray-50 print:hidden">
-				<header className="border-b border-gray-200 bg-white">
+			<div className="min-h-screen bg-muted/30 print:hidden">
+				<header className="border-b bg-background">
 					<div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
 						<div>
-							<h1 className="text-xl font-bold text-gray-900">
+							<h1 className="text-xl font-bold text-foreground">
 								UV Wellness Center
 							</h1>
-							<p className="text-sm text-gray-500">Product Catalog</p>
+							<p className="text-sm text-muted-foreground">Product Catalog</p>
 						</div>
 						{quantities.size > 0 && (
-							<span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-700">
+							<Badge className="px-3 py-1 text-sm">
 								{quantities.size} selected
-							</span>
+							</Badge>
 						)}
 					</div>
 				</header>
 
 				<div className="mx-auto flex max-w-7xl flex-col gap-4 p-4 sm:gap-6 sm:p-6 lg:flex-row">
-					<div className="min-w-0 flex-1">
-						<div className="mb-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-							<div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-								<div className="relative w-full sm:max-w-xs">
-									<SearchIcon className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
-									<input
-										type="text"
-										value={search}
-										onChange={(e) => setSearch(e.target.value)}
-										placeholder="Search by product name..."
-										className="w-full rounded-md border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-green-500 focus:ring-2 focus:ring-green-100 focus:outline-none"
-									/>
-								</div>
-								<div className="relative w-full sm:max-w-xs">
-									<TagIcon className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
-									<select
+					<div className="min-w-0 flex-1 space-y-4">
+						<Card>
+							<CardContent>
+								<div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+									<div className="relative w-full sm:max-w-xs">
+										<Search className="pointer-events-none absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+										<Input
+											type="text"
+											value={search}
+											onChange={(e) => setSearch(e.target.value)}
+											placeholder="Search by product name..."
+											className="pl-8"
+										/>
+									</div>
+									<Select
 										value={category}
-										onChange={(e) => setCategory(e.target.value)}
-										className="w-full rounded-md border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-green-500 focus:ring-2 focus:ring-green-100 focus:outline-none"
+										onValueChange={(value) => setCategory(value ?? 'All')}
 									>
-										{categories.map((cat) => (
-											<option key={cat} value={cat}>
-												{cat}
-											</option>
-										))}
-									</select>
+										<SelectTrigger className="w-full sm:max-w-xs">
+											<Tag className="h-4 w-4 text-muted-foreground" />
+											<SelectValue />
+										</SelectTrigger>
+										<SelectContent>
+											{categories.map((cat) => (
+												<SelectItem key={cat} value={cat}>
+													{cat}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+									{hasActiveFilters && (
+										<Button
+											type="button"
+											variant="link"
+											onClick={clearFilters}
+											className="sm:ml-auto"
+										>
+											Clear filters
+										</Button>
+									)}
 								</div>
-								{hasActiveFilters && (
-									<button
-										type="button"
-										onClick={clearFilters}
-										className="text-sm font-medium text-green-700 hover:text-green-800 sm:ml-auto"
-									>
-										Clear filters
-									</button>
-								)}
-							</div>
-						</div>
+							</CardContent>
+						</Card>
 
-						<div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-							<div className="overflow-x-auto">
-								<table className="min-w-full divide-y divide-gray-200 text-sm">
-									<thead className="bg-gray-50">
-										<tr>
-											<th className="px-4 py-3">
-												<input
-													type="checkbox"
-													checked={
-														filteredProducts.length > 0 &&
-														filteredProducts.every((product) =>
-															quantities.has(product.productName),
-														)
-													}
-													onChange={toggleSelectAll}
-													aria-label="Select all products"
-													className="h-4 w-4 cursor-pointer accent-green-600"
-												/>
-											</th>
-											<th className="px-4 py-3 text-left text-xs font-semibold tracking-wide text-gray-500 uppercase">
-												Product Name
-											</th>
-											<th className="px-4 py-3 text-left text-xs font-semibold tracking-wide text-gray-500 uppercase">
-												Category
-											</th>
-											<th className="px-4 py-3 text-right text-xs font-semibold tracking-wide text-gray-500 uppercase">
-												VP
-											</th>
-											<th className="px-4 py-3 text-right text-xs font-semibold tracking-wide text-gray-500 uppercase">
-												MRP
-											</th>
-											<th className="px-4 py-3 text-right text-xs font-semibold tracking-wide text-gray-500 uppercase">
-												Price 15
-											</th>
-											<th className="px-4 py-3 text-right text-xs font-semibold tracking-wide text-gray-500 uppercase">
-												Price 25
-											</th>
-											<th className="px-4 py-3 text-right text-xs font-semibold tracking-wide text-gray-500 uppercase">
-												Price 35
-											</th>
-											<th className="px-4 py-3 text-right text-xs font-semibold tracking-wide text-gray-500 uppercase">
-												Price 42
-											</th>
-											<th className="px-4 py-3 text-right text-xs font-semibold tracking-wide text-gray-500 uppercase">
-												Price 50
-											</th>
-										</tr>
-									</thead>
-									<tbody className="divide-y divide-gray-100 bg-white">
-										{filteredProducts.map((product, index) => {
-											const isSelected = quantities.has(product.productName);
-											const rowClassName = isSelected
-												? 'bg-green-50 hover:bg-green-100'
-												: index % 2 === 1
-													? 'bg-gray-50/60 hover:bg-gray-100'
-													: 'bg-white hover:bg-gray-100';
-											return (
-												<tr key={product.productName} className={rowClassName}>
-													<td className="px-4 py-3">
-														<input
-															type="checkbox"
-															checked={isSelected}
-															onChange={() =>
-																toggleSelected(product.productName)
-															}
-															aria-label={`Select ${product.productName}`}
-															className="h-4 w-4 cursor-pointer accent-green-600"
-														/>
-													</td>
-													<td className="px-4 py-3 font-medium text-gray-800">
-														{product.productName}
-													</td>
-													<td className="px-4 py-3 text-gray-600">
-														{product.category}
-													</td>
-													<td className="px-4 py-3 text-right text-gray-800">
-														{product.vp.toFixed(2)}
-													</td>
-													<td className="px-4 py-3 text-right text-gray-800">
-														{product.mrp.toFixed(2)}
-													</td>
-													<td className="px-4 py-3 text-right text-gray-800">
-														{product.price15.toFixed(2)}
-													</td>
-													<td className="px-4 py-3 text-right text-gray-800">
-														{product.price25.toFixed(2)}
-													</td>
-													<td className="px-4 py-3 text-right text-gray-800">
-														{product.price35.toFixed(2)}
-													</td>
-													<td className="px-4 py-3 text-right text-gray-800">
-														{product.price42.toFixed(2)}
-													</td>
-													<td className="px-4 py-3 text-right text-gray-800">
-														{product.price50.toFixed(2)}
-													</td>
-												</tr>
-											);
-										})}
-										{filteredProducts.length === 0 && (
-											<tr>
-												<td colSpan={9} className="px-4 py-12 text-center">
-													<InboxIcon className="mx-auto mb-2 h-8 w-8 text-gray-300" />
-													<p className="text-sm font-medium text-gray-500">
-														No products found
-													</p>
-													<p className="text-xs text-gray-400">
-														Try adjusting your search or category filter
-													</p>
-												</td>
-											</tr>
-										)}
-									</tbody>
-								</table>
-							</div>
-						</div>
+						<Card className="overflow-hidden py-0">
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead className="w-10">
+											<Checkbox
+												checked={allFilteredSelected}
+												onCheckedChange={toggleSelectAll}
+												aria-label="Select all products"
+											/>
+										</TableHead>
+										<TableHead>Product Name</TableHead>
+										<TableHead>Category</TableHead>
+										<TableHead className="text-right">VP</TableHead>
+										<TableHead className="text-right">MRP</TableHead>
+										<TableHead className="text-right">Price 15</TableHead>
+										<TableHead className="text-right">Price 25</TableHead>
+										<TableHead className="text-right">Price 35</TableHead>
+										<TableHead className="text-right">Price 42</TableHead>
+										<TableHead className="text-right">Price 50</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{filteredProducts.map((product, index) => {
+										const isSelected = quantities.has(product.productName);
+										return (
+											<TableRow
+												key={product.productName}
+												className={
+													isSelected
+														? 'bg-primary/10 hover:bg-primary/15'
+														: index % 2 === 1
+															? 'bg-muted/40'
+															: ''
+												}
+											>
+												<TableCell>
+													<Checkbox
+														checked={isSelected}
+														onCheckedChange={() =>
+															toggleSelected(product.productName)
+														}
+														aria-label={`Select ${product.productName}`}
+													/>
+												</TableCell>
+												<TableCell className="font-medium">
+													{product.productName}
+												</TableCell>
+												<TableCell className="text-muted-foreground">
+													{product.category}
+												</TableCell>
+												<TableCell className="text-right">
+													{product.vp.toFixed(2)}
+												</TableCell>
+												<TableCell className="text-right">
+													{product.mrp.toFixed(2)}
+												</TableCell>
+												<TableCell className="text-right">
+													{product.price15.toFixed(2)}
+												</TableCell>
+												<TableCell className="text-right">
+													{product.price25.toFixed(2)}
+												</TableCell>
+												<TableCell className="text-right">
+													{product.price35.toFixed(2)}
+												</TableCell>
+												<TableCell className="text-right">
+													{product.price42.toFixed(2)}
+												</TableCell>
+												<TableCell className="text-right">
+													{product.price50.toFixed(2)}
+												</TableCell>
+											</TableRow>
+										);
+									})}
+									{filteredProducts.length === 0 && (
+										<TableRow>
+											<TableCell colSpan={9} className="py-12 text-center">
+												<Inbox className="mx-auto mb-2 h-8 w-8 text-muted-foreground/50" />
+												<p className="text-sm font-medium text-muted-foreground">
+													No products found
+												</p>
+												<p className="text-xs text-muted-foreground/70">
+													Try adjusting your search or category filter
+												</p>
+											</TableCell>
+										</TableRow>
+									)}
+								</TableBody>
+							</Table>
+						</Card>
 					</div>
 
-					<aside className="w-full shrink-0 self-start overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm lg:sticky lg:top-6 lg:w-80">
-						<div className="border-b border-gray-200 bg-gray-50 px-4 py-3">
-							<h2 className="font-semibold text-gray-800">
-								Selected Products ({selectedProducts.length})
-							</h2>
-						</div>
+					<Card className="w-full shrink-0 self-start py-0 lg:sticky lg:top-6 lg:w-80">
+						<CardHeader className="border-b py-3">
+							<CardTitle>Selected Products ({selectedProducts.length})</CardTitle>
+						</CardHeader>
 
 						{selectedProducts.length === 0 ? (
-							<div className="px-4 py-10 text-center">
-								<InboxIcon className="mx-auto mb-2 h-8 w-8 text-gray-300" />
-								<p className="text-sm text-gray-500">
+							<CardContent className="py-10 text-center">
+								<Inbox className="mx-auto mb-2 h-8 w-8 text-muted-foreground/50" />
+								<p className="text-sm text-muted-foreground">
 									No products selected yet.
 								</p>
-							</div>
+							</CardContent>
 						) : (
-							<ul className="max-h-[70vh] divide-y divide-gray-100 overflow-y-auto">
+							<ul className="max-h-[70vh] divide-y overflow-y-auto">
 								{selectedProducts.map((product) => (
 									<li
 										key={product.productName}
 										className="flex items-start justify-between gap-2 px-4 py-3"
 									>
 										<div className="min-w-0 flex-1">
-											<p className="truncate text-sm font-medium text-gray-800">
+											<p className="truncate text-sm font-medium">
 												{product.productName}
 											</p>
-											<p className="text-xs text-gray-500">
+											<p className="text-xs text-muted-foreground">
 												{product.category}
 											</p>
-											<div className="mt-2 inline-flex items-center rounded-md border border-gray-300">
-												<button
+											<div className="mt-2 inline-flex items-center rounded-lg border border-input">
+												<Button
 													type="button"
+													variant="ghost"
+													size="icon-sm"
 													onClick={() =>
-														updateQuantity(
-															product.productName,
-															product.quantity - 1,
-														)
+														updateQuantity(product.productName, product.quantity - 1)
 													}
 													aria-label={`Decrease quantity for ${product.productName}`}
-													className="flex h-8 w-8 items-center justify-center rounded-l-md text-gray-500 hover:bg-gray-100"
+													className="rounded-r-none"
 												>
-													<MinusIcon className="h-3.5 w-3.5" />
-												</button>
-												<input
+													<Minus className="h-3.5 w-3.5" />
+												</Button>
+												<Input
 													type="number"
 													min={1}
 													value={product.quantity}
@@ -367,109 +359,97 @@ function ProductListing() {
 														)
 													}
 													aria-label={`Quantity for ${product.productName}`}
-													className="h-8 w-12 border-x border-gray-300 text-center text-sm [appearance:textfield] focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+													className="h-8 w-12 rounded-none border-x-0 text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
 												/>
-												<button
+												<Button
 													type="button"
+													variant="ghost"
+													size="icon-sm"
 													onClick={() =>
-														updateQuantity(
-															product.productName,
-															product.quantity + 1,
-														)
+														updateQuantity(product.productName, product.quantity + 1)
 													}
 													aria-label={`Increase quantity for ${product.productName}`}
-													className="flex h-8 w-8 items-center justify-center rounded-r-md text-gray-500 hover:bg-gray-100"
+													className="rounded-l-none"
 												>
-													<PlusIcon className="h-3.5 w-3.5" />
-												</button>
+													<Plus className="h-3.5 w-3.5" />
+												</Button>
 											</div>
 										</div>
-										<button
+										<Button
 											type="button"
+											variant="ghost"
+											size="icon-sm"
 											onClick={() => removeSelected(product.productName)}
 											aria-label={`Remove ${product.productName}`}
-											className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-gray-400 hover:bg-red-50 hover:text-red-600"
+											className="text-muted-foreground hover:text-destructive"
 										>
-											<XIcon className="h-4 w-4" />
-										</button>
+											<X className="h-4 w-4" />
+										</Button>
 									</li>
 								))}
 							</ul>
 						)}
 
 						{selectedProducts.length > 0 && (
-							<div className="border-t border-gray-200 bg-gray-50 px-4 py-3">
-								<h3 className="mb-2 text-sm font-semibold text-gray-800">
-									Totals
-								</h3>
+							<div className="border-t bg-muted/50 px-4 py-3">
+								<h3 className="mb-2 text-sm font-semibold">Totals</h3>
 								<dl className="space-y-1 text-sm">
 									<div className="flex justify-between">
-										<dt className="text-gray-600">VP</dt>
-										<dd className="text-gray-800">{totals.vp.toFixed(2)}</dd>
+										<dt className="text-muted-foreground">VP</dt>
+										<dd>{totals.vp.toFixed(2)}</dd>
 									</div>
 									<div className="flex justify-between">
-										<dt className="text-gray-600">MRP</dt>
-										<dd className="text-gray-800">{totals.mrp.toFixed(2)}</dd>
+										<dt className="text-muted-foreground">MRP</dt>
+										<dd>{totals.mrp.toFixed(2)}</dd>
 									</div>
 									<div className="flex justify-between">
-										<dt className="text-gray-600">Price 15</dt>
-										<dd className="text-gray-800">
-											{totals.price15.toFixed(2)}
-										</dd>
+										<dt className="text-muted-foreground">Price 15</dt>
+										<dd>{totals.price15.toFixed(2)}</dd>
 									</div>
 									<div className="flex justify-between">
-										<dt className="text-gray-600">Price 25</dt>
-										<dd className="text-gray-800">
-											{totals.price25.toFixed(2)}
-										</dd>
+										<dt className="text-muted-foreground">Price 25</dt>
+										<dd>{totals.price25.toFixed(2)}</dd>
 									</div>
 									<div className="flex justify-between">
-										<dt className="text-gray-600">Price 35</dt>
-										<dd className="text-gray-800">
-											{totals.price35.toFixed(2)}
-										</dd>
+										<dt className="text-muted-foreground">Price 35</dt>
+										<dd>{totals.price35.toFixed(2)}</dd>
 									</div>
 									<div className="flex justify-between">
-										<dt className="text-gray-600">Price 42</dt>
-										<dd className="text-gray-800">
-											{totals.price42.toFixed(2)}
-										</dd>
+										<dt className="text-muted-foreground">Price 42</dt>
+										<dd>{totals.price42.toFixed(2)}</dd>
 									</div>
 									<div className="flex justify-between">
-										<dt className="text-gray-600">Price 50</dt>
-										<dd className="text-gray-800">
-											{totals.price50.toFixed(2)}
-										</dd>
+										<dt className="text-muted-foreground">Price 50</dt>
+										<dd>{totals.price50.toFixed(2)}</dd>
 									</div>
 								</dl>
 							</div>
 						)}
 
-						<div className="border-t border-gray-200 px-4 py-3">
-							<button
+						<CardFooter className="border-t py-3">
+							<Button
 								type="button"
 								disabled={selectedProducts.length === 0}
 								onClick={() => setIsPrintModalOpen(true)}
-								className="flex w-full items-center justify-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+								className="w-full"
 							>
-								<PrinterIcon className="h-4 w-4" />
+								<Printer className="h-4 w-4" />
 								Print
-							</button>
-						</div>
-					</aside>
+							</Button>
+						</CardFooter>
+					</Card>
 				</div>
 			</div>
 
-			{isPrintModalOpen && (
-				<PrintOptionsModal
-					products={selectedProducts}
-					onCancel={() => setIsPrintModalOpen(false)}
-					onConfirm={(title, priceLevel) => {
-						setIsPrintModalOpen(false);
-						setPrintData({ title, priceLevel });
-					}}
-				/>
-			)}
+			<PrintOptionsModal
+				open={isPrintModalOpen}
+				products={selectedProducts}
+				onOpenChange={setIsPrintModalOpen}
+				onConfirm={(title, priceLevel) => {
+					setIsPrintModalOpen(false);
+					setPrintData({ title, priceLevel });
+				}}
+			/>
 
 			{printData && (
 				<PrintPreview
@@ -483,4 +463,3 @@ function ProductListing() {
 }
 
 export default ProductListing;
-
