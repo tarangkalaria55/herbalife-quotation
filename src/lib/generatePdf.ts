@@ -3,7 +3,7 @@ import autoTable from 'jspdf-autotable';
 import type { IProduct } from '../data/products.type';
 import type { PriceLevel } from '../data/priceLevels';
 
-interface GeneratePdfOptions {
+interface PdfOptions {
 	title: string;
 	priceLevel: PriceLevel;
 	products: (IProduct & { quantity: number })[];
@@ -20,12 +20,31 @@ const TEXT_DARK: [number, number, number] = [31, 41, 55];
 const TEXT_MUTED: [number, number, number] = [107, 114, 128];
 const BORDER_LIGHT: [number, number, number] = [229, 231, 235];
 
-export function generatePdf({
-	title,
-	priceLevel,
-	products,
-}: GeneratePdfOptions) {
+function pad(value: number) {
+	return value.toString().padStart(2, '0');
+}
+
+function buildFileBaseName(title: string) {
+	const now = new Date();
+	const timestamp = [
+		now.getFullYear(),
+		pad(now.getMonth() + 1),
+		pad(now.getDate()),
+		pad(now.getHours()),
+		pad(now.getMinutes()),
+		pad(now.getSeconds()),
+	].join('');
+	const safeTitle = (title.trim() || 'Order Summary').replace(
+		/[\\/:*?"<>|]+/g,
+		'-',
+	);
+	return `${safeTitle}-${timestamp}`;
+}
+
+function buildOrderSummaryPdf({ title, priceLevel, products }: PdfOptions) {
 	const doc = new jsPDF();
+	const fileBaseName = buildFileBaseName(title);
+	doc.setProperties({ title: fileBaseName });
 
 	const netTotal = products.reduce(
 		(sum, product) => sum + product.mrp * product.quantity,
@@ -170,6 +189,39 @@ export function generatePdf({
 		drawFooter(page, pageCount);
 	}
 
-	doc.save(`${title.trim() || 'order-summary'}.pdf`);
+	return { doc, fileBaseName };
 }
 
+export function downloadPdf(options: PdfOptions) {
+	const { doc, fileBaseName } = buildOrderSummaryPdf(options);
+	const filename = `${fileBaseName}.pdf`;
+	const blob = doc.output('blob');
+	const file = new File([blob], filename, { type: 'application/pdf' });
+	const url = URL.createObjectURL(file);
+	const link = document.createElement('a');
+	link.href = url;
+	link.download = filename;
+	document.body.appendChild(link);
+	link.click();
+	document.body.removeChild(link);
+	URL.revokeObjectURL(url);
+}
+
+export function printPdf(options: PdfOptions) {
+	const { doc, fileBaseName } = buildOrderSummaryPdf(options);
+	const blob = doc.output('blob');
+	const filename = `${fileBaseName}.pdf`;
+	const file = new File([blob], filename, { type: 'application/pdf' });
+	const url = URL.createObjectURL(file);
+	const printWindow = window.open(url, '_blank');
+
+	if (!printWindow) {
+		URL.revokeObjectURL(url);
+		return;
+	}
+
+	printWindow.addEventListener('load', () => {
+		printWindow.focus();
+		printWindow.print();
+	});
+}

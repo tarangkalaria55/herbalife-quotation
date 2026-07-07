@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Download } from 'lucide-react';
+import { Download, FileText, Loader2, Printer } from 'lucide-react';
 import type { IProduct } from '../data/products.type';
 import { PRICE_LEVELS, type PriceLevel } from '../data/priceLevels';
 import { Button } from './ui/button';
@@ -24,17 +24,32 @@ interface PrintOptionsModalProps {
 	open: boolean;
 	products: (IProduct & { quantity: number })[];
 	onOpenChange: (open: boolean) => void;
-	onConfirm: (title: string, priceLevel: PriceLevel) => void;
+	onDownload: (title: string, priceLevel: PriceLevel) => void;
+	onPrint: (title: string, priceLevel: PriceLevel) => void;
 }
 
 function PrintOptionsModal({
 	open,
 	products,
 	onOpenChange,
-	onConfirm,
+	onDownload,
+	onPrint,
 }: PrintOptionsModalProps) {
 	const [title, setTitle] = useState('Order Summary');
 	const [priceLevel, setPriceLevel] = useState<PriceLevel>('bronze');
+	const [pendingAction, setPendingAction] = useState<'download' | 'print' | null>(
+		null,
+	);
+
+	const runWithLoader = (action: 'download' | 'print', run: () => void) => {
+		setPendingAction(action);
+		requestAnimationFrame(() => {
+			requestAnimationFrame(() => {
+				run();
+				setPendingAction(null);
+			});
+		});
+	};
 
 	const totals = useMemo(() => {
 		const totalMrp = products.reduce(
@@ -66,9 +81,9 @@ function PrintOptionsModal({
 				<DialogHeader>
 					<DialogTitle className="flex items-center gap-2">
 						<span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
-							<Download className="h-4.5 w-4.5" />
+							<FileText className="h-4.5 w-4.5" />
 						</span>
-						Download PDF
+						PDF Options
 					</DialogTitle>
 				</DialogHeader>
 
@@ -133,16 +148,43 @@ function PrintOptionsModal({
 				</div>
 
 				<DialogFooter>
-					<Button variant="outline" onClick={() => onOpenChange(false)}>
+					<Button
+						variant="outline"
+						onClick={() => onOpenChange(false)}
+						disabled={pendingAction !== null}
+					>
 						Cancel
 					</Button>
 					<Button
+						variant="outline"
+						disabled={pendingAction !== null}
 						onClick={() =>
-							onConfirm(title.trim() || 'Order Summary', priceLevel)
+							runWithLoader('print', () =>
+								onPrint(title.trim() || 'Order Summary', priceLevel),
+							)
 						}
 					>
-						<Download className="h-4 w-4" />
-						Download PDF
+						{pendingAction === 'print' ? (
+							<Loader2 className="h-4 w-4 animate-spin" />
+						) : (
+							<Printer className="h-4 w-4" />
+						)}
+						{pendingAction === 'print' ? 'Preparing...' : 'Print'}
+					</Button>
+					<Button
+						disabled={pendingAction !== null}
+						onClick={() =>
+							runWithLoader('download', () =>
+								onDownload(title.trim() || 'Order Summary', priceLevel),
+							)
+						}
+					>
+						{pendingAction === 'download' ? (
+							<Loader2 className="h-4 w-4 animate-spin" />
+						) : (
+							<Download className="h-4 w-4" />
+						)}
+						{pendingAction === 'download' ? 'Preparing...' : 'Download PDF'}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { Download, Inbox, Minus, Plus, Search, Tag, X } from 'lucide-react';
 import { products } from '../data/products';
 import PrintOptionsModal from './PrintOptionsModal';
-import { generatePdf } from '../lib/generatePdf';
+import { downloadPdf, printPdf } from '../lib/generatePdf';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import {
@@ -466,9 +466,13 @@ function ProductListing() {
 				open={isPrintModalOpen}
 				products={selectedProducts}
 				onOpenChange={setIsPrintModalOpen}
-				onConfirm={(title, priceLevel) => {
+				onDownload={(title, priceLevel) => {
+					downloadPdf({ title, priceLevel, products: selectedProducts });
 					setIsPrintModalOpen(false);
-					generatePdf({ title, priceLevel, products: selectedProducts });
+				}}
+				onPrint={(title, priceLevel) => {
+					printPdf({ title, priceLevel, products: selectedProducts });
+					setIsPrintModalOpen(false);
 				}}
 			/>
 		</>
