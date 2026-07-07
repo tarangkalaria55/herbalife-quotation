@@ -1,0 +1,19 @@
+{
+	"files.exclude": {
+		"**/.git": true,
+		"**/.svn": true,
+		"**/.hg": true,
+		"**/.DS_Store": true,
+		"**/Thumbs.db": true
+	},
+	"hide-files.files": [],
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"editor.formatOnSave": true,
+	"prettier.enable": true,
+	"prettier.configPath": ".prettierrc",
+	"files.associations": {
+		"tsconfig.app.json": "jsonc",
+		"tsconfig.node.json": "jsonc",
+		"tsconfig.json": "jsonc"
+	}
+}
