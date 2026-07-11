@@ -29,8 +29,7 @@ import {
 	TableHeader,
 	TableRow,
 } from './ui/table';
-
-const SHOW_CATEGORY = false;
+import { SHOW_CATEGORY } from '@/constants';
 
 function ProductListing() {
 	const [search, setSearch] = useState('');

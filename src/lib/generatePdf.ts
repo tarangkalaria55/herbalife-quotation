@@ -1,5 +1,6 @@
 import type { IProduct } from '../data/products.type';
 import type { PriceLevel } from '../data/priceLevels';
+import { PROFIT_THRESHOLD } from '@/constants';
 
 interface PdfOptions {
 	title: string;
@@ -152,9 +153,11 @@ async function buildOrderSummaryPdf({
 		y = 36;
 	}
 
+	const showProfit = Math.abs(profit) >= PROFIT_THRESHOLD;
+
 	const boxWidth = 80;
 	const boxX = PAGE_WIDTH - MARGIN - boxWidth;
-	const boxHeight = 34;
+	const boxHeight = showProfit ? 34 : 14;
 
 	doc.setFillColor(...BRAND_GREEN_LIGHT);
 	doc.setDrawColor(...BORDER_LIGHT);
@@ -163,32 +166,44 @@ async function buildOrderSummaryPdf({
 	const rowY = y + 9;
 	const lineGap = 9;
 
-	doc.setFont('helvetica', 'normal');
 	doc.setFontSize(10);
-	doc.setTextColor(...TEXT_MUTED);
+	if (showProfit) {
+		doc.setFont('helvetica', 'normal');
+		doc.setTextColor(...TEXT_MUTED);
+	} else {
+		doc.setFont('helvetica', 'bold');
+		doc.setTextColor(...BRAND_GREEN_DARK);
+	}
 	doc.text('Total Price', boxX + 5, rowY);
-	doc.text('You Pay', boxX + 5, rowY + lineGap);
 
-	doc.setTextColor(...TEXT_DARK);
+	if (showProfit) {
+		doc.setTextColor(...TEXT_DARK);
+	}
 	doc.text(netTotal.toFixed(2), boxX + boxWidth - 5, rowY, { align: 'right' });
-	doc.text(youPay.toFixed(2), boxX + boxWidth - 5, rowY + lineGap, {
-		align: 'right',
-	});
 
-	doc.setDrawColor(...BORDER_LIGHT);
-	doc.line(
-		boxX + 5,
-		rowY + lineGap + 4,
-		boxX + boxWidth - 5,
-		rowY + lineGap + 4,
-	);
+	if (showProfit) {
+		doc.setTextColor(...TEXT_MUTED);
+		doc.text('You Pay', boxX + 5, rowY + lineGap);
+		doc.setTextColor(...TEXT_DARK);
+		doc.text(youPay.toFixed(2), boxX + boxWidth - 5, rowY + lineGap, {
+			align: 'right',
+		});
 
-	doc.setFont('helvetica', 'bold');
-	doc.setTextColor(...BRAND_GREEN_DARK);
-	doc.text('Profit', boxX + 5, rowY + lineGap * 2 + 2);
-	doc.text(profit.toFixed(2), boxX + boxWidth - 5, rowY + lineGap * 2 + 2, {
-		align: 'right',
-	});
+		doc.setDrawColor(...BORDER_LIGHT);
+		doc.line(
+			boxX + 5,
+			rowY + lineGap + 4,
+			boxX + boxWidth - 5,
+			rowY + lineGap + 4,
+		);
+
+		doc.setFont('helvetica', 'bold');
+		doc.setTextColor(...BRAND_GREEN_DARK);
+		doc.text('Profit', boxX + 5, rowY + lineGap * 2 + 2);
+		doc.text(profit.toFixed(2), boxX + boxWidth - 5, rowY + lineGap * 2 + 2, {
+			align: 'right',
+		});
+	}
 
 	const pageCount = doc.getNumberOfPages();
 	for (let page = 1; page <= pageCount; page += 1) {

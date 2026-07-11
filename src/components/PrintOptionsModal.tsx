@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Download, FileText, Loader2, Printer } from 'lucide-react';
 import type { IProduct } from '../data/products.type';
-import { PRICE_LEVELS, type PriceLevel } from '../data/priceLevels';
+import { type PriceLevel } from '../data/priceLevels';
 import { Button } from './ui/button';
 import {
 	Dialog,
@@ -19,6 +19,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from './ui/select';
+import { PRICE_LEVELS, PROFIT_THRESHOLD } from '@/constants';
 
 interface PrintOptionsModalProps {
 	open: boolean;
@@ -75,6 +76,8 @@ function PrintOptionsModal({
 	const priceLevelLabel =
 		PRICE_LEVELS.find((level) => level.value === priceLevel)?.label ?? '';
 
+	const showProfit = Math.abs(totals.profit) >= PROFIT_THRESHOLD;
+
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent>
@@ -128,7 +131,7 @@ function PrintOptionsModal({
 							<dt className="text-muted-foreground">Total MRP</dt>
 							<dd>{totals.totalMrp.toFixed(2)}</dd>
 						</div>
-						{priceLevel !== 'mrp' && (
+						{priceLevel !== 'mrp' && showProfit && (
 							<div className="flex justify-between">
 								<dt className="text-muted-foreground">
 									Total {priceLevelLabel}
@@ -140,10 +143,12 @@ function PrintOptionsModal({
 							<dt className="text-muted-foreground">Total VP</dt>
 							<dd>{totals.totalVp.toFixed(2)}</dd>
 						</div>
-						<div className="flex justify-between font-semibold">
-							<dt>Profit</dt>
-							<dd>{totals.profit.toFixed(2)}</dd>
-						</div>
+						{showProfit && (
+							<div className="flex justify-between font-semibold">
+								<dt>Profit</dt>
+								<dd>{totals.profit.toFixed(2)}</dd>
+							</div>
+						)}
 					</dl>
 				</div>
 
