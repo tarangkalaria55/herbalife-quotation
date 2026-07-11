@@ -30,6 +30,8 @@ import {
 	TableRow,
 } from './ui/table';
 
+const SHOW_CATEGORY = false;
+
 function ProductListing() {
 	const [search, setSearch] = useState('');
 	const [category, setCategory] = useState('All');
@@ -183,22 +185,24 @@ function ProductListing() {
 											className="pl-8"
 										/>
 									</div>
-									<Select
-										value={category}
-										onValueChange={(value) => setCategory(value ?? 'All')}
-									>
-										<SelectTrigger className="w-full sm:max-w-xs">
-											<Tag className="h-4 w-4 text-muted-foreground" />
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											{categories.map((cat) => (
-												<SelectItem key={cat} value={cat}>
-													{cat}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
+									{SHOW_CATEGORY && (
+										<Select
+											value={category}
+											onValueChange={(value) => setCategory(value ?? 'All')}
+										>
+											<SelectTrigger className="w-full sm:max-w-xs">
+												<Tag className="h-4 w-4 text-muted-foreground" />
+												<SelectValue />
+											</SelectTrigger>
+											<SelectContent>
+												{categories.map((cat) => (
+													<SelectItem key={cat} value={cat}>
+														{cat}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									)}
 									{hasActiveFilters && (
 										<Button
 											type="button"
@@ -225,7 +229,8 @@ function ProductListing() {
 											/>
 										</TableHead>
 										<TableHead>Product Name</TableHead>
-										<TableHead>Category</TableHead>
+										{SHOW_CATEGORY && <TableHead>Category</TableHead>}
+
 										<TableHead className="text-right">VP</TableHead>
 										<TableHead className="text-right">MRP</TableHead>
 										<TableHead className="text-right">Bronze</TableHead>
@@ -263,9 +268,11 @@ function ProductListing() {
 												<TableCell className="font-medium">
 													{product.productName}
 												</TableCell>
-												<TableCell className="text-muted-foreground">
-													{product.category}
-												</TableCell>
+												{SHOW_CATEGORY && (
+													<TableCell className="text-muted-foreground">
+														{product.category}
+													</TableCell>
+												)}
 												<TableCell className="text-right">
 													{product.vp.toFixed(2)}
 												</TableCell>
@@ -480,4 +487,3 @@ function ProductListing() {
 }
 
 export default ProductListing;
-

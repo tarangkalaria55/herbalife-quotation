@@ -37,9 +37,9 @@ function PrintOptionsModal({
 }: PrintOptionsModalProps) {
 	const [title, setTitle] = useState('Order Summary');
 	const [priceLevel, setPriceLevel] = useState<PriceLevel>('bronze');
-	const [pendingAction, setPendingAction] = useState<'download' | 'print' | null>(
-		null,
-	);
+	const [pendingAction, setPendingAction] = useState<
+		'download' | 'print' | null
+	>(null);
 
 	const runWithLoader = (action: 'download' | 'print', run: () => void) => {
 		setPendingAction(action);

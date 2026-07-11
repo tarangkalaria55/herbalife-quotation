@@ -39,7 +39,11 @@ function buildFileBaseName(title: string) {
 	return `${safeTitle}-${timestamp}`;
 }
 
-async function buildOrderSummaryPdf({ title, priceLevel, products }: PdfOptions) {
+async function buildOrderSummaryPdf({
+	title,
+	priceLevel,
+	products,
+}: PdfOptions) {
 	const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
 		import('jspdf'),
 		import('jspdf-autotable'),
@@ -228,3 +232,4 @@ export async function printPdf(options: PdfOptions) {
 		printWindow.print();
 	});
 }
+
